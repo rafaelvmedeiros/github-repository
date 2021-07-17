@@ -2,7 +2,7 @@ import React, { useState, FormEvent } from 'react';
 
 import { toast } from 'react-toastify';
 import { FiChevronRight } from 'react-icons/fi';
-import { Title, Form, Repositories } from './styles';
+import { Title, Form, Repositories, Error } from './styles';
 
 import Loading from '../../components/Loading';
 
@@ -19,6 +19,7 @@ interface Repository {
 
 const Dashboard: React.FC = () => {
   const [newRepo, setNewRepo] = useState('');
+  const [inputError, setInputError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [repositories, setRepositories] = useState<Repository[]>([]);
 
@@ -31,8 +32,8 @@ const Dashboard: React.FC = () => {
   ): Promise<void> {
     event.preventDefault();
 
-    if (newRepo === '') {
-      toast.error('You forget the repository name!');
+    if (!newRepo) {
+      setInputError('You forget the repository name!');
       return;
     }
 
@@ -42,8 +43,7 @@ const Dashboard: React.FC = () => {
       const { data } = await api.get(`/repos/${newRepo}`);
 
       if (repositoryExists(data)) {
-        toast.error('You already added this repository!');
-        setLoading(false);
+        setInputError('You already added this repository!');
         return;
       }
 
@@ -51,11 +51,12 @@ const Dashboard: React.FC = () => {
       toast.success('New repository added sucessfully!');
 
       setTimeout(() => {
+        setInputError('');
         setNewRepo('');
         setLoading(false);
       }, 100);
     } catch (err) {
-      toast.error(err.message);
+      setInputError('This repository not exists or you type a wrong name!');
       setLoading(false);
     }
   }
@@ -68,7 +69,7 @@ const Dashboard: React.FC = () => {
         <Loading />
       ) : (
         <>
-          <Form onSubmit={handleAddRepository}>
+          <Form hasError={!!inputError.trim()} onSubmit={handleAddRepository}>
             <input
               type="text"
               placeholder="Digite o nome do repositório"
@@ -76,6 +77,8 @@ const Dashboard: React.FC = () => {
             />
             <button type="submit">Pesquisar</button>
           </Form>
+
+          {inputError && <Error>{inputError}</Error>}
 
           <Repositories>
             {repositories.map((repository) => (

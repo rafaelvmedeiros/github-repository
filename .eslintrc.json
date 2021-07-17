@@ -51,7 +51,10 @@
         "ts": "never",
         "tsx": "never"
       }
-    ]
+    ],
+    "max-len": [2, 80, 4, { "ignoreUrls": true }],
+    "implicit-arrow-linebreak": "off",
+    "function-paren-newline": "off"
   },
   "settings": {
     "import/resolver": {

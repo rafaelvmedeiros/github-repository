@@ -16,7 +16,7 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["react", "@typescript-eslint", "react-hooks"],
+  "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
     "camelcase": "off",
     "react-hooks/rules-of-hooks": "error",
@@ -53,6 +53,7 @@
       }
     ],
     "max-len": [2, 80, 4, { "ignoreUrls": true }],
+    "react/jsx-one-expression-per-line": "off",
     "implicit-arrow-linebreak": "off",
     "function-paren-newline": "off",
     "operator-linebreak": ["error", "after"],

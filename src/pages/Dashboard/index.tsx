@@ -1,11 +1,10 @@
-import React, { useState, FormEvent } from 'react';
-
+import React, { useState, FormEvent, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiChevronRight } from 'react-icons/fi';
 import { Title, Form, Repositories, Error } from './styles';
 
 import Loading from '../../components/Loading';
-
 import api from '../../services/api';
 
 interface Repository {
@@ -21,10 +20,27 @@ const Dashboard: React.FC = () => {
   const [newRepo, setNewRepo] = useState('');
   const [inputError, setInputError] = useState('');
   const [isLoading, setLoading] = useState(false);
-  const [repositories, setRepositories] = useState<Repository[]>([]);
+  const [repositories, setRepositories] = useState<Repository[]>(() => {
+    const storagedRepositories = localStorage.getItem(
+      '@GithubExplorer:repositories',
+    );
 
-  function repositoryExists(data: Repository): boolean {
-    return repositories.some((repo) => repo.full_name === data.full_name);
+    if (storagedRepositories) {
+      return JSON.parse(storagedRepositories);
+    }
+
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      '@GithubExplorer:repositories',
+      JSON.stringify(repositories),
+    );
+  }, [repositories]);
+
+  function repositoryExists(repoName: string): boolean {
+    return repositories.some((repo) => repo.full_name === repoName);
   }
 
   async function handleAddRepository(
@@ -37,17 +53,18 @@ const Dashboard: React.FC = () => {
       return;
     }
 
+    if (repositoryExists(newRepo)) {
+      setInputError('This repository was already exists!');
+      return;
+    }
+
     try {
       setLoading(true);
 
       const { data } = await api.get(`/repos/${newRepo}`);
 
-      if (repositoryExists(data)) {
-        setInputError('You already added this repository!');
-        return;
-      }
-
       setRepositories([...repositories, data]);
+
       toast.success('New repository added sucessfully!');
 
       setTimeout(() => {
@@ -82,7 +99,11 @@ const Dashboard: React.FC = () => {
 
           <Repositories>
             {repositories.map((repository) => (
-              <a key={repository.full_name} href="teste">
+              <Link
+                to={`/repositories/${repository.full_name}`}
+                key={repository.full_name}
+                href="teste"
+              >
                 <img
                   src={repository.owner.avatar_url}
                   alt={repository.owner.login}
@@ -92,7 +113,7 @@ const Dashboard: React.FC = () => {
                   <p>{repository.description}</p>
                 </div>
                 <FiChevronRight size="22" />
-              </a>
+              </Link>
             ))}
           </Repositories>
         </>
